@@ -1,148 +1,134 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>RE - PFP - HALLOWEEN</title>
-
-<link href="https://fonts.googleapis.com/css2?family=Creepster&display=swap" rel="stylesheet">
-
+<link href="https://fonts.googleapis.com/css2?family=Creepster&display=swap" rel="stylesheet" />
 <style>
-body{margin:0;background:#0e0e12;color:#fff;font-family:Inter,system-ui,Arial;text-align:center}
-.container{max-width:1200px;margin:0 auto;padding:18px}
-.controls{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin:10px 0}
-input,button{padding:10px 12px;border-radius:10px;border:none;font-size:14px}
-input[type=color]{width:120px;height:40px;padding:0}
-button{background:#7c3aed;color:#fff;cursor:pointer}
-button:active{transform:scale(.98)}
-.card{background:#111;border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:10px;display:inline-block}
-#canvas{width:30vw;min-width:280px;max-width:900px;height:auto;background:#000;border-radius:12px;display:block;margin:0 auto}
-.small{font-size:12px;color:#aab;display:block;margin-top:6px}
-.row{display:flex;gap:10px;justify-content:center;margin:8px 0}
-.range{width:180px}
+  body{margin:0;background:#0e0e12;color:#fff;font-family:Inter,system-ui,Arial;text-align:center}
+  .container{max-width:1200px;margin:0 auto;padding:18px}
+  .controls{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin:10px 0}
+  input,button{padding:10px 12px;border-radius:10px;border:none;font-size:14px}
+  input[type=color]{width:120px;height:40px;padding:0}
+  button{background:#7c3aed;color:#fff;cursor:pointer}
+  button:active{transform:scale(.98)}
+  .card{background:#111;border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:10px;display:inline-block}
+  #canvas{width:30vw;min-width:280px;max-width:900px;height:auto;background:#000;border-radius:12px;display:block;margin:0 auto}
+  .small{font-size:12px;color:#aab;display:block;margin-top:6px}
+  .row{display:flex;gap:10px;justify-content:center;margin:8px 0}
+  .range{width:180px}
 </style>
 </head>
 <body>
+  <div class="container">
+    <h2>RE - PFP - HALLOWEEN</h2>
 
-<div class="container">
-  <h2>RE - PFP - HALLOWEEN</h2>
-  <div class="controls">
-    <label>Background</label>
-    <input type="color" id="bgColor" value="#A000FF">
-    <label>Text</label>
-    <input type="text" id="nameInput" placeholder="Enter your name">
-    <label>Text color</label>
-    <input type="color" id="textColor" value="#FFEA00">
-    <label>Size</label>
-    <input type="range" id="fontSize" class="range" min="40" max="260" value="140">
-    <label>Glow</label>
-    <input type="range" id="glow" class="range" min="0" max="80" value="35">
+    <div class="controls">
+      <label>Background</label>
+      <input type="color" id="bgColor" value="#A000FF" />
+      <label>Text</label>
+      <input type="text" id="nameInput" placeholder="Enter name" />
+      <label>Text color</label>
+      <input type="color" id="textColor" value="#FFEA00" />
+      <label>Size</label>
+      <input type="range" id="fontSize" class="range" min="40" max="260" value="140" />
+      <label>Glow</label>
+      <input type="range" id="glow" class="range" min="0" max="80" value="35" />
+    </div>
+
+    <div class="card">
+      <canvas id="canvas" width="2048" height="2048"></canvas>
+    </div>
+
+    <div class="row">
+      <button id="centerBtn">Reset</button>
+      <button id="downloadBtn">Download</button>
+    </div>
+
+    <span class="small">Single-file build. Drag text on the shirt. Export 2048×2048.</span>
   </div>
-
-  <div class="card">
-    <canvas id="canvas" width="2048" height="2048"></canvas>
-  </div>
-
-  <div class="row">
-    <button id="centerBtn">Reset text position</button>
-    <button id="downloadBtn">Download</button>
-  </div>
-
-  <span class="small">Drag your name freely. Export 2048×2048 HD.</span>
-</div>
 
 <script>
-const BASE_DATA = "data:image/png;base64,REPLACE_BASE64_HERE"
+const BASE_DATA = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBAUEBAYFBQUGBgYHCQ4JC...SNIPPED_FOR_BREVITY.../9k=";
 
-const W=2048,H=2048
-const c=document.getElementById('canvas')
-const ctx=c.getContext('2d')
+const W=2048,H=2048;
+const c=document.getElementById('canvas');
+const ctx=c.getContext('2d');
 
-let bg='#A000FF'
-let txt=''
-let tcolor='#FFEA00'
-let fsize=140
-let glow=35
-let tx=700, ty=1650
-let dragging=false
-let loaded=false
+let bg='#A000FF', txt='', tcolor='#FFEA00', fsize=140, glow=35;
+let tx=700, ty=1650, dragging=false, loaded=false;
 
-const base=new Image()
-base.onload=()=>{loaded=true;draw()}
-base.src=BASE_DATA
+const base=new Image();
+base.onload=()=>{ loaded=true; draw(); };
+base.src=BASE_DATA;
 
 function draw(){
-  ctx.clearRect(0,0,W,H)
-  ctx.fillStyle=bg;ctx.fillRect(0,0,W,H)
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
 
   if(loaded){
-    const iw=base.width, ih=base.height
-    const s=Math.min(W/iw,H/ih)
-    const dw=iw*s, dh=ih*s
-    const dx=(W-dw)/2, dy=(H-dh)/2
-    ctx.imageSmoothingQuality='high'
-    ctx.drawImage(base,dx,dy,dw,dh)
+    const iw=base.width, ih=base.height;
+    const s=Math.min(W/iw, H/ih);
+    const dw=iw*s, dh=ih*s;
+    const dx=(W-dw)/2, dy=(H-dh)/2;
+    ctx.imageSmoothingQuality='high';
+    ctx.drawImage(base, dx, dy, dw, dh);
   }
 
   if(txt){
-    ctx.save()
-    ctx.font='700 '+fsize+'px Creepster'
-    ctx.textAlign='left'
-    ctx.textBaseline='middle'
-    ctx.shadowColor=tcolor
-    ctx.shadowBlur=glow*1.4
-    ctx.lineWidth=Math.max(4,Math.round(fsize*0.13))
-    ctx.strokeStyle='rgba(0,0,0,1)'
-    ctx.strokeText(txt,tx,ty)
-    ctx.fillStyle=tcolor
-    ctx.fillText(txt,tx,ty)
-    ctx.restore()
+    ctx.save();
+    ctx.font='700 '+fsize+'px Creepster, Arial, sans-serif';
+    ctx.textAlign='left';
+    ctx.textBaseline='middle';
+    ctx.shadowColor=tcolor;
+    ctx.shadowBlur=glow*1.4;
+    ctx.lineWidth=Math.max(4, Math.round(fsize*0.13));
+    ctx.strokeStyle='rgba(0,0,0,1)';
+    ctx.strokeText(txt, tx, ty);
+    ctx.fillStyle=tcolor;
+    ctx.fillText(txt, tx, ty);
+    ctx.restore();
   }
 }
 
-document.getElementById('bgColor').addEventListener('input',e=>{bg=e.target.value;draw()})
-document.getElementById('nameInput').addEventListener('input',e=>{txt=e.target.value;draw()})
-document.getElementById('textColor').addEventListener('input',e=>{tcolor=e.target.value;draw()})
-document.getElementById('fontSize').addEventListener('input',e=>{fsize=parseInt(e.target.value,10);draw()})
-document.getElementById('glow').addEventListener('input',e=>{glow=parseInt(e.target.value,10);draw()})
+document.getElementById('bgColor').addEventListener('input', e=>{ bg=e.target.value; draw(); });
+document.getElementById('nameInput').addEventListener('input', e=>{ txt=e.target.value; draw(); });
+document.getElementById('textColor').addEventListener('input', e=>{ tcolor=e.target.value; draw(); });
+document.getElementById('fontSize').addEventListener('input', e=>{ fsize=parseInt(e.target.value,10); draw(); });
+document.getElementById('glow').addEventListener('input', e=>{ glow=parseInt(e.target.value,10); draw(); });
 
-document.getElementById('centerBtn').addEventListener('click',()=>{
-  tx=700
-  ty=1650
-  draw()
-})
+document.getElementById('centerBtn').addEventListener('click', ()=>{ tx=700; ty=1650; draw(); });
 
-c.addEventListener('mousedown',e=>{
-  if(!txt)return
-  const r=c.getBoundingClientRect()
-  const x=(e.clientX-r.left)*(W/r.width)
-  const y=(e.clientY-r.top)*(H/r.height)
-  ctx.save()
-  ctx.font='700 '+fsize+'px Creepster'
-  const w=ctx.measureText(txt).width
-  const h=fsize
-  ctx.restore()
-  if(x>tx-10&&x<tx+w+50&&y>ty-h&&y<ty+h) dragging=true
-})
+c.addEventListener('mousedown', e=>{
+  if(!txt) return;
+  const r=c.getBoundingClientRect();
+  const x=(e.clientX-r.left)*(W/r.width);
+  const y=(e.clientY-r.top)*(H/r.height);
+  ctx.save();
+  ctx.font='700 '+fsize+'px Creepster, Arial, sans-serif';
+  const w=ctx.measureText(txt).width;
+  const h=fsize;
+  ctx.restore();
+  if(x>tx-10 && x<tx+w+50 && y>ty-h && y<ty+h) dragging=true;
+});
+window.addEventListener('mousemove', e=>{
+  if(!dragging) return;
+  const r=c.getBoundingClientRect();
+  tx=(e.clientX-r.left)*(W/r.width);
+  ty=(e.clientY-r.top)*(H/r.height);
+  draw();
+});
+window.addEventListener('mouseup', ()=> dragging=false);
 
-window.addEventListener('mousemove',e=>{
-  if(!dragging)return
-  const r=c.getBoundingClientRect()
-  tx=(e.clientX-r.left)*(W/r.width)
-  ty=(e.clientY-r.top)*(H/r.height)
-  draw()
-})
+document.getElementById('downloadBtn').addEventListener('click', ()=>{
+  const a=document.createElement('a');
+  a.download='re-halloween-pfp.png';
+  a.href=c.toDataURL('image/png');
+  a.click();
+});
 
-window.addEventListener('mouseup',()=>dragging=false)
-
-document.getElementById('downloadBtn').addEventListener('click',()=>{
-  const a=document.createElement('a')
-  a.download='re-halloween-pfp.png'
-  a.href=c.toDataURL('image/png')
-  a.click()
-})
-
-draw()
+draw();
 </script>
 </body>
 </html>

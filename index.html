@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PFP Maker 2048</title>
+<style>
+body{margin:0;background:#0e0e12;color:#fff;font-family:Inter,system-ui,Arial;text-align:center}
+.container{max-width:1200px;margin:0 auto;padding:18px}
+.controls{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin:10px 0}
+input,button{padding:10px 12px;border-radius:10px;border:none;font-size:14px}
+input[type=color]{width:120px;height:40px;padding:0}
+button{background:#7c3aed;color:#fff;cursor:pointer}
+button:active{transform:scale(.98)}
+.card{background:#111;border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:10px;display:inline-block}
+#canvas{width:92vw;max-width:900px;height:auto;background:#000;border-radius:12px;display:block;margin:0 auto}
+.small{font-size:12px;color:#aab;display:block;margin-top:6px}
+.row{display:flex;gap:10px;justify-content:center;margin:8px 0}
+.range{width:180px}
+</style>
+</head>
+<body>
+<div class="container">
+  <h2>PFP Maker 2048</h2>
+  <div class="controls">
+    <label>Background</label>
+    <input type="color" id="bgColor" value="#A000FF">
+    <label>Text</label>
+    <input type="text" id="nameInput" placeholder="Enter your name">
+    <label>Text color</label>
+    <input type="color" id="textColor" value="#00C4FF">
+    <label>Size</label>
+    <input type="range" id="fontSize" class="range" min="40" max="220" value="120">
+    <label>Glow</label>
+    <input type="range" id="glow" class="range" min="0" max="60" value="24">
+  </div>
+  <div class="card">
+    <canvas id="canvas" width="2048" height="2048"></canvas>
+  </div>
+  <div class="row">
+    <button id="centerBtn">Reset text position</button>
+    <button id="downloadBtn">Download PNG 2048×2048</button>
+  </div>
+  <span class="small">Image stays on the top layer. Background color is below. Drag the name on the shirt.</span>
+</div>
+<script>
+const W=2048,H=2048
+const c=document.getElementById('canvas')
+const ctx=c.getContext('2d')
+let bg='#A000FF'
+let txt=''
+let tcolor='#00C4FF'
+let fsize=120
+let glow=24
+let tx=720, ty=1630
+let dragging=false
+const base=new Image()
+base.src='assets/base.png'
+let loaded=false
+base.onload=()=>{loaded=true;draw()}
+function draw(){
+  ctx.clearRect(0,0,W,H)
+  ctx.fillStyle=bg;ctx.fillRect(0,0,W,H)
+  if(loaded){
+    const iw=base.width, ih=base.height
+    const s=Math.min(W/iw,H/ih)
+    const dw=iw*s, dh=ih*s
+    const dx=(W-dw)/2, dy=(H-dh)/2
+    ctx.imageSmoothingQuality='high'
+    ctx.drawImage(base,dx,dy,dw,dh)
+  }
+  if(txt){
+    ctx.save()
+    ctx.font='700 '+fsize+'px Arial,system-ui'
+    ctx.textAlign='left'
+    ctx.textBaseline='middle'
+    ctx.shadowColor=tcolor
+    ctx.shadowBlur=glow
+    ctx.lineWidth=Math.max(2,Math.round(fsize*0.08))
+    ctx.strokeStyle='rgba(0,0,0,.85)'
+    ctx.strokeText(txt,tx,ty)
+    ctx.fillStyle=tcolor
+    ctx.fillText(txt,tx,ty)
+    ctx.restore()
+  }
+}
+document.getElementById('bgColor').addEventListener('input',e=>{bg=e.target.value;draw()})
+document.getElementById('nameInput').addEventListener('input',e=>{txt=e.target.value;draw()})
+document.getElementById('textColor').addEventListener('input',e=>{tcolor=e.target.value;draw()})
+document.getElementById('fontSize').addEventListener('input',e=>{fsize=parseInt(e.target.value,10);draw()})
+document.getElementById('glow').addEventListener('input',e=>{glow=parseInt(e.target.value,10);draw()})
+document.getElementById('centerBtn').addEventListener('click',()=>{tx=720;ty=1630;draw()})
+c.addEventListener('mousedown',e=>{
+  if(!txt)return
+  const r=c.getBoundingClientRect()
+  const x=(e.clientX-r.left)*(W/r.width)
+  const y=(e.clientY-r.top)*(H/r.height)
+  ctx.save()
+  ctx.font='700 '+fsize+'px Arial,system-ui'
+  const w=ctx.measureText(txt).width
+  const h=fsize
+  ctx.restore()
+  if(x>tx-10 && x<tx+w+10 && y>ty-h && y<ty+h) dragging=true
+})
+window.addEventListener('mousemove',e=>{
+  if(!dragging)return
+  const r=c.getBoundingClientRect()
+  tx=(e.clientX-r.left)*(W/r.width)
+  ty=(e.clientY-r.top)*(H/r.height)
+  draw()
+})
+window.addEventListener('mouseup',()=>dragging=false)
+document.getElementById('downloadBtn').addEventListener('click',()=>{
+  const a=document.createElement('a')
+  a.download='pfp-2048.png'
+  a.href=c.toDataURL('image/png')
+  a.click()
+})
+draw()
+</script>
+</body>
+</html>

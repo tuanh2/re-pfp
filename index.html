@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PFP Maker 2048</title>
+<link rel="preload" href="./assets/base.png" as="image">
 <style>
 body{margin:0;background:#0e0e12;color:#fff;font-family:Inter,system-ui,Arial;text-align:center}
 .container{max-width:1200px;margin:0 auto;padding:18px}
@@ -13,7 +14,7 @@ input[type=color]{width:120px;height:40px;padding:0}
 button{background:#7c3aed;color:#fff;cursor:pointer}
 button:active{transform:scale(.98)}
 .card{background:#111;border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:10px;display:inline-block}
-#canvas{width:92vw;max-width:900px;height:auto;background:#000;border-radius:12px;display:block;margin:0 auto}
+#canvas{width:30vw;min-width:280px;max-width:900px;height:auto;background:#000;border-radius:12px;display:block;margin:0 auto}
 .small{font-size:12px;color:#aab;display:block;margin-top:6px}
 .row{display:flex;gap:10px;justify-content:center;margin:8px 0}
 .range{width:180px}
@@ -54,10 +55,12 @@ let fsize=120
 let glow=24
 let tx=720, ty=1630
 let dragging=false
-const base=new Image()
-base.src='assets/base.png'
 let loaded=false
+const base=new Image()
+base.crossOrigin='anonymous'
 base.onload=()=>{loaded=true;draw()}
+base.onerror=()=>{loaded=false;alert('Cannot load ./assets/base.png');draw()}
+base.src='./assets/base.png?v='+Date.now()
 function draw(){
   ctx.clearRect(0,0,W,H)
   ctx.fillStyle=bg;ctx.fillRect(0,0,W,H)
